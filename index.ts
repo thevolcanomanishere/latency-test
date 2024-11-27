@@ -1,7 +1,8 @@
 import WebSocket from 'ws';
 import { performance } from 'perf_hooks';
+import readline from 'readline';
 
-const PORT = 8080;
+const PORT = 6969;
 const MEASUREMENTS_COUNT = 10;
 
 type Message = {
@@ -20,6 +21,20 @@ const startServer = () => {
             if (message.type === 'ping') {
                 ws.send(JSON.stringify({ type: 'pong', timestamp: message.timestamp }));
             }
+        });
+    });
+};
+
+const askServerUrl = async (): Promise<string> => {
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+
+    return new Promise((resolve) => {
+        rl.question('Enter server URL (e.g., ws://server-ip:8080): ', (url) => {
+            rl.close();
+            resolve(url);
         });
     });
 };
@@ -66,13 +81,8 @@ const mode = process.argv[2];
 if (mode === 'server') {
     startServer();
 } else if (mode === 'client') {
-    const serverUrl = process.argv[3];
-    if (!serverUrl) {
-        console.error('Usage: ts-node script.ts client ws://server-ip:8080');
-        process.exit(1);
-    }
-    startClient(serverUrl);
+    askServerUrl().then(startClient);
 } else {
-    console.error('Usage: ts-node script.ts [server|client] [server-url]');
+    console.error('Usage: tsx latency.ts [server|client]');
     process.exit(1);
 }

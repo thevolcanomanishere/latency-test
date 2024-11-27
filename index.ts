@@ -1,9 +1,8 @@
 import WebSocket from 'ws';
 import { performance } from 'perf_hooks';
 import readline from 'readline';
-import https from 'https';
 
-const PORT = 8080;
+const PORT = 6969;
 const MEASUREMENTS_COUNT = 10;
 
 type Message = {
@@ -11,20 +10,9 @@ type Message = {
     timestamp: number;
 };
 
-const getPublicIp = async (): Promise<string> => {
-    return new Promise((resolve, reject) => {
-        https.get('https://api.ipify.org', (res) => {
-            let data = '';
-            res.on('data', chunk => data += chunk);
-            res.on('end', () => resolve(data));
-        }).on('error', reject);
-    });
-};
-
-const startServer = async () => {
-    const ip = await getPublicIp();
+const startServer = () => {
     const server = new WebSocket.Server({ port: PORT });
-    console.log(`Server running at ws://${ip}:${PORT}`);
+    console.log(`Server listening on port ${PORT}`);
 
     server.on('connection', (ws) => {
         console.log('Client connected');
@@ -91,7 +79,7 @@ const printStats = (measurements: number[]) => {
 
 const mode = process.argv[2];
 if (mode === 'server') {
-    startServer().catch(console.error);
+    startServer();
 } else if (mode === 'client') {
     askServerUrl().then(startClient);
 } else {
